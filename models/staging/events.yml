@@ -1,0 +1,23 @@
+version: 2
+
+sources:
+    - name: events
+      database: events
+      schema:  raw
+      tables:
+        - name: LOGISTIC_DEVICEPURCHASED
+          description: "Devices need to be purchased by JukeboxInc before they can be allocated to a location"
+        - name: MUSIC_SONGLISTENED
+          description: "This table contains information about the airports."
+        - name: MUSIC_SONGPUBLISHED
+          description: "This table contains information about the boarding passes."
+        - name: MUSIC_SONGREMOVED
+          description: "This table contains information about the bookings."
+        - name: PAYMENT_PAYMENTRECEIVED
+          description: "This table contains information about the flights."
+        - name: SALE_CUSTOMERREGISTERED
+          description: "This table contains information about the seats."
+        - name: SALE_DEVICEALLOCATED
+          description: "This table contains information about the ticket flights."
+        - name: SALE_LOCATIONREGISTERED
+          description: "This table contains information about the tickets."
