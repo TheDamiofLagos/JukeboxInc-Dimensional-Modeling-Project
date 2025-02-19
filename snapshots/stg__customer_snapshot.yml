@@ -1,0 +1,13 @@
+# This snapshot uses the staging model for customer registration. It captures when each customer was registered and any changes to their details over time.
+
+snapshots:
+  - name: stg__customer_snapshot
+    relation: ref('stg_events__sale_customerregistered')
+    config:
+      schema: snapshots
+      unique_key: CUSTOMERID
+      strategy: timestamp
+      updated_at: OccurredAt
+      persist_docs:
+       relation: true
+       columns: true
