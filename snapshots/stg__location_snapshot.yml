@@ -1,0 +1,14 @@
+# This snapshot tracks location details. If a bar changes its contact phone number or other location attributes, you’ll have a historical record to join with fact data accurately.
+
+snapshots:
+  - name: stg__location_snapshot
+    relation: ref('stg_events__sale_locationregistered')
+    config:
+      schema: snapshots
+      unique_key: LocationId
+      strategy: timestamp
+      updated_at: OccurredAt
+      persist_docs:
+       relation: true
+       columns: true
+
