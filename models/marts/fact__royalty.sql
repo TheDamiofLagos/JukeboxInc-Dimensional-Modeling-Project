@@ -9,7 +9,7 @@ with royalty as (
         PaymentAmount,
         purchase_price,
         payment_order,
-        payment_occurred_at as royalty_timestamp,
+        allocation_occurred_at as royalty_timestamp,
         payment_type
     from {{ ref('int__sales_payments') }}
     where payment_type = 'Royalty Payment'
