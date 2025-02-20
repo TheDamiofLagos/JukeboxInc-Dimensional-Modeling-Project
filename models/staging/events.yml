@@ -6,18 +6,172 @@ sources:
       schema:  raw
       tables:
         - name: LOGISTIC_DEVICEPURCHASED
-          description: "Devices need to be purchased by JukeboxInc before they can be allocated to a location"
+          description: "Events capturing the purchase of a new device."
+          columns:
+            - name: DeviceId
+              description: "Unique identifier for the device."
+              tests:
+                - not_null
+                - unique
+            - name: OccurredAt
+              description: "Timestamp of when the device was purchased."
+              tests:
+                - not_null
+            - name: DeviceDetails.DevicePrice
+              description: "Price of the purchased device."
+              tests:
+                - not_null
+            - name: DeviceDetails.DeviceTypeName
+              description: "Human-readable type name of the device."
+            - name: DeviceDetails.DeviceTypeId
+              description: "Internal ID representing the device type."
+            - name: DeviceDetails.SerialNumber
+              description: "Serial number of the device."
+
         - name: MUSIC_SONGLISTENED
-          description: "This table contains information about the airports."
+          description: "Events capturing when a song is played on a device."
+          columns:
+            - name: DeviceId
+              description: "Unique identifier for the device that played the song."
+              tests:
+                - not_null
+            - name: OccurredAt
+              description: "Timestamp of the song play event."
+              tests:
+                - not_null
+            - name: SongCompletedTime
+              description: "Length of time (in seconds) the song was played."
+            - name: SongId
+              description: "Unique identifier for the song."
+              tests:
+                - not_null
+
         - name: MUSIC_SONGPUBLISHED
-          description: "This table contains information about the boarding passes."
+          description: "Events when a new song is published and made available."
+          columns:
+            - name: SongId
+              description: "Unique identifier for the newly published song."
+              tests:
+                - not_null
+                - unique
+            - name: SongDetails.ArtistName
+              description: "Name of the artist performing the song."
+            - name: SongDetails.SongName
+              description: "Title of the published song."
+            - name: SongDetails.AlbumName
+              description: "Album name to which the song belongs, if any."
+            - name: SongDetails.SongLength
+              description: "Length of the song (e.g. '4:15')."
+            - name: SongDetails.SongSizeMb
+              description: "Size of the song file in MB."
+            - name: OccurredAt
+              description: "Timestamp of the publish event."
+              tests:
+                - not_null
+
         - name: MUSIC_SONGREMOVED
-          description: "This table contains information about the bookings."
+          description: "Events indicating when a song is removed from the catalog."
+          columns:
+            - name: SongId
+              description: "Unique identifier for the removed song."
+              tests:
+                - not_null
+            - name: OccurredAt
+              description: "Timestamp of when the song was removed."
+              tests:
+                - not_null
+
         - name: PAYMENT_PAYMENTRECEIVED
-          description: "This table contains information about the flights."
+          description: "Events capturing payments received from customers."
+          columns:
+            - name: Payment.PaymentId
+              description: "Unique identifier for the payment."
+              tests:
+                - not_null
+                - unique
+            - name: Payment.CustomerId
+              description: "ID of the customer who made the payment."
+              tests:
+                - not_null
+            - name: Payment.PaymentAmount
+              description: "Amount paid by the customer."
+              tests:
+                - not_null
+            - name: Payment.OccurredAt
+              description: "Timestamp of when the payment was received."
+              tests:
+                - not_null
+
         - name: SALE_CUSTOMERREGISTERED
-          description: "This table contains information about the seats."
+          description: "Events that register a new customer in the system."
+          columns:
+            - name: CustomerId
+              description: "Unique identifier for the customer."
+              tests:
+                - not_null
+                - unique
+            - name: CustomerName
+              description: "Full name of the customer or legal entity."
+            - name: CustomerEmail
+              description: "Email address of the customer."
+            - name: CustomerPhoneNumber
+              description: "Primary phone number of the customer."
+            - name: LegalAddress
+              description: "Legal address of the customer."
+            - name: CustomerDateOfBirth
+              description: "Date of birth of the customer (if applicable)."
+            - name: OccurredAt
+              description: "Timestamp of when the customer was registered."
+              tests:
+                - not_null
+
         - name: SALE_DEVICEALLOCATED
-          description: "This table contains information about the ticket flights."
+          description: "Events allocating a device to a customer location, indicating a potential sale."
+          columns:
+            - name: DeviceId
+              description: "Unique identifier for the allocated device."
+              tests:
+                - not_null
+            - name: LocationAllocatedId
+              description: "Identifier for the location to which the device is allocated."
+              tests:
+                - not_null
+            - name: OccurredAt
+              description: "Timestamp of the device allocation event."
+              tests:
+                - not_null
+            - name: DeviceDetails.DeviceName
+              description: "Name of the allocated device (e.g. MusicMaker3000)."
+            - name: DeviceDetails.DevicePrice
+              description: "Price of the allocated device."
+            - name: DeviceDetails.Id
+              description: "Internal ID for the device details."
+            - name: SellingAgent.AgentId
+              description: "Unique identifier for the selling agent."
+            - name: SellingAgent.AgentName
+              description: "Name of the selling agent."
+
         - name: SALE_LOCATIONREGISTERED
-          description: "This table contains information about the tickets."
+          description: "Events that register a new location where devices can be installed."
+          columns:
+            - name: LocationId
+              description: "Unique identifier for the location."
+              tests:
+                - not_null
+                - unique
+            - name: CustomerId
+              description: "ID of the customer who owns the location."
+              tests:
+                - not_null
+            - name: Latitude
+              description: "Geographical latitude of the location."
+            - name: Longitude
+              description: "Geographical longitude of the location."
+            - name: ContactName
+              description: "Name of the primary contact at the location."
+            - name: ContactPhoneNumber
+              description: "Phone number of the primary contact at the location."
+            - name: OccurredAt
+              description: "Timestamp of when the location was registered."
+              tests:
+                - not_null
