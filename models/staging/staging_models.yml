@@ -1,0 +1,173 @@
+version: 2
+
+models:
+  - name: stg_events__logistic_devicepurchased
+    description: "Staging model for raw logistic_devicepurchased events. This model flattens and normalizes device purchase data."
+    columns:
+      - name: DeviceId
+        description: "Unique identifier for the device."
+        tests:
+          - not_null
+          - unique
+      - name: OccurredAt
+        description: "Timestamp when the device was purchased."
+        tests:
+          - not_null
+      - name: DeviceDetails.DevicePrice
+        description: "Price of the purchased device."
+        tests:
+          - not_null
+      - name: DeviceDetails.DeviceTypeName
+        description: "Human-readable type name of the device."
+      - name: DeviceDetails.DeviceTypeId
+        description: "Internal ID representing the device type."
+      - name: DeviceDetails.SerialNumber
+        description: "Serial number of the device."
+
+  - name: stg_events__music_songlistened
+    description: "Staging model for raw music_songlistened events. This model captures when a song is played on a device."
+    columns:
+      - name: DeviceId
+        description: "Unique identifier for the device that played the song."
+        tests:
+          - not_null
+      - name: OccurredAt
+        description: "Timestamp of the song play event."
+        tests:
+          - not_null
+      - name: SongCompletedTime
+        description: "Length of time (in seconds) the song was played."
+      - name: SongId
+        description: "Unique identifier for the song."
+        tests:
+          - not_null
+
+  - name: stg_events__music_songpublished
+    description: "Staging model for raw music_songpublished events. This model captures when new songs are published."
+    columns:
+      - name: SongId
+        description: "Unique identifier for the published song."
+        tests:
+          - not_null
+          - unique
+      - name: SongDetails.ArtistName
+        description: "Name of the artist performing the song."
+      - name: SongDetails.SongName
+        description: "Title of the published song."
+      - name: SongDetails.AlbumName
+        description: "Album name to which the song belongs (if applicable)."
+      - name: SongDetails.SongLength
+        description: "Duration of the song (e.g., '4:15')."
+      - name: SongDetails.SongSizeMb
+        description: "Size of the song file in MB."
+      - name: OccurredAt
+        description: "Timestamp when the song was published."
+        tests:
+          - not_null
+
+  - name: stg_events__music_songremoved
+    description: "Staging model for raw music_songremoved events. This model tracks when songs are removed from the catalog."
+    columns:
+      - name: SongId
+        description: "Unique identifier for the removed song."
+        tests:
+          - not_null
+      - name: OccurredAt
+        description: "Timestamp when the song was removed."
+        tests:
+          - not_null
+
+  - name: stg_events__payment_paymentreceived
+    description: "Staging model for raw payment_paymentreceived events. This model captures payment transactions from customers."
+    columns:
+      - name: Payment.PaymentId
+        description: "Unique identifier for the payment."
+        tests:
+          - not_null
+          - unique
+      - name: Payment.CustomerId
+        description: "ID of the customer making the payment."
+        tests:
+          - not_null
+      - name: Payment.PaymentAmount
+        description: "Amount paid by the customer."
+        tests:
+          - not_null
+      - name: Payment.OccurredAt
+        description: "Timestamp when the payment was received."
+        tests:
+          - not_null
+
+  - name: stg_events__sale_customerregistered
+    description: "Staging model for raw sale_customerregistered events. This model registers customer data when a new customer is added."
+    columns:
+      - name: CustomerId
+        description: "Unique identifier for the customer."
+        tests:
+          - not_null
+          - unique
+      - name: CustomerName
+        description: "Full name of the customer."
+      - name: CustomerEmail
+        description: "Email address of the customer."
+      - name: CustomerPhoneNumber
+        description: "Primary phone number of the customer."
+      - name: LegalAddress
+        description: "Legal address of the customer."
+      - name: CustomerDateOfBirth
+        description: "Customer's date of birth."
+      - name: OccurredAt
+        description: "Timestamp when the customer was registered."
+        tests:
+          - not_null
+
+  - name: stg_events__sale_deviceallocated
+    description: "Staging model for raw sale_deviceallocated events. This model records device allocations to customer locations (indicative of a sale)."
+    columns:
+      - name: DeviceId
+        description: "Unique identifier for the allocated device."
+        tests:
+          - not_null
+      - name: LocationAllocatedId
+        description: "Identifier for the location where the device is allocated."
+        tests:
+          - not_null
+      - name: OccurredAt
+        description: "Timestamp when the device allocation occurred."
+        tests:
+          - not_null
+      - name: DeviceDetails.DeviceName
+        description: "Name of the allocated device (e.g., MusicMaker3000)."
+      - name: DeviceDetails.DevicePrice
+        description: "Price of the allocated device."
+      - name: DeviceDetails.Id
+        description: "Internal ID for the device details."
+      - name: SellingAgent.AgentId
+        description: "Unique identifier for the selling agent."
+      - name: SellingAgent.AgentName
+        description: "Name of the selling agent."
+
+  - name: stg_events__sale_locationregistered
+    description: "Staging model for raw sale_locationregistered events. This model registers new locations where devices can be installed."
+    columns:
+      - name: LocationId
+        description: "Unique identifier for the location."
+        tests:
+          - not_null
+          - unique
+      - name: CustomerId
+        description: "ID of the customer who owns the location."
+        tests:
+          - not_null
+      - name: Latitude
+        description: "Geographical latitude of the location."
+      - name: Longitude
+        description: "Geographical longitude of the location."
+      - name: ContactName
+        description: "Primary contact name at the location."
+      - name: ContactPhoneNumber
+        description: "Primary contact phone number at the location."
+      - name: OccurredAt
+        description: "Timestamp when the location was registered."
+        tests:
+          - not_null
