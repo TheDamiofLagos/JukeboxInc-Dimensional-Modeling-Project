@@ -1,0 +1,72 @@
+version: 2
+
+models:
+  - name: int__sales_payments
+    description: >
+      This intermediate model consolidates data from device allocation, customer registration,
+      location registration, device purchase, and payment events. It applies business logic to
+      classify payment events as follows:
+        - When payment_order = 1 and PaymentAmount > purchase_price, the payment is classified as a
+          **Valid Sale** (full installation fee).
+        - When payment_order = 1 and PaymentAmount <= purchase_price, it's classified as an
+          **Installation Installment** (partial payment).
+        - When payment_order > 1, the payment is classified as a **Royalty Payment**.
+    columns:
+      - name: DeviceId
+        description: "Unique identifier for the device."
+        tests:
+          - not_null
+      - name: LocationId
+        description: "Identifier for the allocated location."
+        tests:
+          - not_null
+      - name: CustomerId
+        description: "Unique identifier for the customer."
+        tests:
+          - not_null
+      - name: AgentId
+        description: "Unique identifier for the selling agent."
+      - name: AgentName
+        description: "Name of the selling agent."
+      - name: allocation_occurred_at
+        description: "Timestamp when the device allocation occurred."
+        tests:
+          - not_null
+      - name: PaymentId
+        description: "Unique identifier for the payment event."
+        tests:
+          - not_null
+          - unique
+      - name: PaymentAmount
+        description: "The amount received in the payment event."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000
+      - name: purchase_price
+        description: "The purchase price of the device from the purchase event."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000
+      - name: payment_order
+        description: >
+          "Order of the payment for a given customer. Payment_order = 1 is the installation fee,
+          and subsequent payments (payment_order > 1) are royalty payments."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: [1, 2, 3, 4, 5]  # Adjust as needed
+      - name: payment_type
+        description: >
+          "Classification based on business rules:
+           - 'Valid Sale' when payment_order = 1 and PaymentAmount > purchase_price.
+           - 'Installation Installment' when payment_order = 1 and PaymentAmount <= purchase_price.
+           - 'Royalty Payment' when payment_order > 1."
+        tests:
+          - not_null
+          - payment_type_valid_sale
+          - payment_type_installment
+          - payment_type_royalty

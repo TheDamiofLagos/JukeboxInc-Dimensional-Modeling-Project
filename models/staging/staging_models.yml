@@ -17,6 +17,9 @@ models:
         description: "Price of the purchased device."
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000
       - name: DeviceDetails.DeviceTypeName
         description: "Human-readable type name of the device."
       - name: DeviceDetails.DeviceTypeId
@@ -25,7 +28,7 @@ models:
         description: "Serial number of the device."
 
   - name: stg_events__music_songlistened
-    description: "Staging model for raw music_songlistened events. This model captures when a song is played on a device."
+    description: "Staging model for raw music_songlistened events. Captures when a song is played on a device."
     columns:
       - name: DeviceId
         description: "Unique identifier for the device that played the song."
@@ -37,13 +40,17 @@ models:
           - not_null
       - name: SongCompletedTime
         description: "Length of time (in seconds) the song was played."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 3600
       - name: SongId
         description: "Unique identifier for the song."
         tests:
           - not_null
 
   - name: stg_events__music_songpublished
-    description: "Staging model for raw music_songpublished events. This model captures when new songs are published."
+    description: "Staging model for raw music_songpublished events. Captures when new songs are published."
     columns:
       - name: SongId
         description: "Unique identifier for the published song."
@@ -51,7 +58,7 @@ models:
           - not_null
           - unique
       - name: SongDetails.ArtistName
-        description: "Name of the artist performing the song."
+        description: "Artist performing the song."
       - name: SongDetails.SongName
         description: "Title of the published song."
       - name: SongDetails.AlbumName
@@ -60,13 +67,17 @@ models:
         description: "Duration of the song (e.g., '4:15')."
       - name: SongDetails.SongSizeMb
         description: "Size of the song file in MB."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 50
       - name: OccurredAt
         description: "Timestamp when the song was published."
         tests:
           - not_null
 
   - name: stg_events__music_songremoved
-    description: "Staging model for raw music_songremoved events. This model tracks when songs are removed from the catalog."
+    description: "Staging model for raw music_songremoved events. Tracks when songs are removed from the catalog."
     columns:
       - name: SongId
         description: "Unique identifier for the removed song."
@@ -78,7 +89,7 @@ models:
           - not_null
 
   - name: stg_events__payment_paymentreceived
-    description: "Staging model for raw payment_paymentreceived events. This model captures payment transactions from customers."
+    description: "Staging model for raw payment_paymentreceived events. Captures payment transactions from customers."
     columns:
       - name: Payment.PaymentId
         description: "Unique identifier for the payment."
@@ -93,13 +104,16 @@ models:
         description: "Amount paid by the customer."
         tests:
           - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000
       - name: Payment.OccurredAt
         description: "Timestamp when the payment was received."
         tests:
           - not_null
 
   - name: stg_events__sale_customerregistered
-    description: "Staging model for raw sale_customerregistered events. This model registers customer data when a new customer is added."
+    description: "Staging model for raw sale_customerregistered events. Registers customer data when a new customer is added."
     columns:
       - name: CustomerId
         description: "Unique identifier for the customer."
@@ -122,7 +136,7 @@ models:
           - not_null
 
   - name: stg_events__sale_deviceallocated
-    description: "Staging model for raw sale_deviceallocated events. This model records device allocations to customer locations (indicative of a sale)."
+    description: "Staging model for raw sale_deviceallocated events. Records device allocations to customer locations (indicative of a sale)."
     columns:
       - name: DeviceId
         description: "Unique identifier for the allocated device."
@@ -140,6 +154,10 @@ models:
         description: "Name of the allocated device (e.g., MusicMaker3000)."
       - name: DeviceDetails.DevicePrice
         description: "Price of the allocated device."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000
       - name: DeviceDetails.Id
         description: "Internal ID for the device details."
       - name: SellingAgent.AgentId
@@ -148,7 +166,7 @@ models:
         description: "Name of the selling agent."
 
   - name: stg_events__sale_locationregistered
-    description: "Staging model for raw sale_locationregistered events. This model registers new locations where devices can be installed."
+    description: "Staging model for raw sale_locationregistered events. Registers new locations where devices can be installed."
     columns:
       - name: LocationId
         description: "Unique identifier for the location."

@@ -1,0 +1,312 @@
+version: 2
+
+models:
+  - name: fact__sales
+    description: >
+      Fact table capturing valid installation sales (full payments where PaymentAmount > purchase_price).
+      Includes calculated margin and sale-day details.
+    columns:
+      - name: DeviceId
+        description: "Unique identifier for the device sold."
+        tests:
+          - not_null
+      - name: LocationId
+        description: "Identifier for the location where the device is allocated."
+        tests:
+          - not_null
+      - name: CustomerId
+        description: "Unique identifier for the customer."
+        tests:
+          - not_null
+      - name: AgentId
+        description: "Identifier for the selling agent."
+      - name: AgentName
+        description: "Name of the selling agent."
+      - name: sale_timestamp
+        description: "Timestamp when the sale (installation) was recorded."
+        tests:
+          - not_null
+      - name: PaymentId
+        description: "Unique identifier for the payment event."
+        tests:
+          - not_null
+          - unique
+      - name: PaymentAmount
+        description: "Amount received in the sale payment."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000
+      - name: purchase_price
+        description: "Purchase price of the device."
+        tests:
+          - not_null
+      - name: margin
+        description: "Calculated margin (PaymentAmount minus purchase_price)."
+      - name: sale_day
+        description: "Date (truncated from sale_timestamp) for time-based analysis."
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Timestamp when the record was loaded."
+
+  - name: fact__royalty
+    description: >
+      Fact table capturing recurring royalty payments (payment_order > 1), representing ongoing revenue for song plays.
+    columns:
+      - name: DeviceId
+        description: "Unique identifier for the device receiving the royalty."
+        tests:
+          - not_null
+      - name: LocationId
+        description: "Identifier for the location associated with the royalty payment."
+        tests:
+          - not_null
+      - name: CustomerId
+        description: "Unique identifier for the customer making the royalty payment."
+        tests:
+          - not_null
+      - name: AgentId
+        description: "Identifier for the selling agent."
+      - name: AgentName
+        description: "Name of the selling agent."
+      - name: PaymentId
+        description: "Unique identifier for the royalty payment."
+        tests:
+          - not_null
+          - unique
+      - name: PaymentAmount
+        description: "Amount received in the royalty payment."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000
+      - name: payment_order
+        description: "Indicates the payment order (should be > 1 for royalty payments)."
+        tests:
+          - not_null
+      - name: royalty_timestamp
+        description: "Timestamp when the royalty payment was received."
+        tests:
+          - not_null
+      - name: royalty_day
+        description: "Date (truncated from royalty_timestamp) for aggregation."
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Timestamp when the record was loaded."
+
+  - name: fact__product_sales
+    description: >
+      Fact table for product sales aggregated by product type and month.
+      Used for marketing insights to compare product launches.
+    columns:
+      - name: product_name
+        description: "Name of the product (device type) sold."
+        tests:
+          - not_null
+      - name: sale_month
+        description: "Month (truncated from sale_timestamp) when the sale occurred."
+        tests:
+          - not_null
+      - name: total_sales
+        description: "Count of valid sales for the product in the month."
+      - name: total_revenue
+        description: "Aggregated revenue from sales for the product in the month."
+      - name: loaded_at
+        description: "Timestamp when the record was loaded."
+
+  - name: dim__agents
+    description: "Dimension table for selling agents derived from device allocation events."
+    columns:
+      - name: AgentId
+        description: "Unique identifier for the agent."
+        tests:
+          - not_null
+          - unique
+      - name: AgentName
+        description: "Name of the selling agent."
+        tests:
+          - not_null
+      - name: loaded_at
+        description: "Timestamp when the record was loaded."
+
+  - name: dim__customers
+    description: >
+      Dimension table for customers, built from snapshots and staging data.
+      Captures key attributes such as name, contact information, and registration date.
+    columns:
+      - name: CustomerId
+        description: "Unique identifier for the customer."
+        tests:
+          - not_null
+          - unique
+      - name: CustomerName
+        description: "Full name of the customer."
+      - name: CustomerEmail
+        description: "Email address of the customer."
+      - name: CustomerPhoneNumber
+        description: "Phone number of the customer."
+      - name: LegalAddress
+        description: "Legal address of the customer."
+      - name: CustomerDateOfBirth
+        description: "Customer's date of birth."
+      - name: customer_registered_at
+        description: "Timestamp when the customer was registered."
+        tests:
+          - not_null
+
+  - name: dim__devices
+    description: >
+      Dimension table for devices derived from logistic device purchased events.
+      Provides key details such as device type, serial number, and purchase price.
+    columns:
+      - name: DeviceId
+        description: "Unique identifier for the device."
+        tests:
+          - not_null
+          - unique
+      - name: DeviceTypeId
+        description: "Internal identifier for the device type."
+      - name: DeviceTypeName
+        description: "Human-readable name for the device type."
+      - name: SerialNumber
+        description: "Serial number of the device."
+      - name: DevicePrice
+        description: "Price of the device at purchase."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100000
+      - name: device_purchase_date
+        description: "Timestamp when the device was purchased."
+
+  - name: dim__locations
+    description: >
+      Dimension table for locations, derived from location registration events and snapshots.
+      Contains geographic and contact information for device installations.
+    columns:
+      - name: LocationId
+        description: "Unique identifier for the location."
+        tests:
+          - not_null
+          - unique
+      - name: CustomerId
+        description: "Identifier for the customer who owns the location."
+        tests:
+          - not_null
+      - name: Latitude
+        description: "Geographical latitude of the location."
+      - name: Longitude
+        description: "Geographical longitude of the location."
+      - name: ContactName
+        description: "Primary contact name at the location."
+      - name: ContactPhoneNumber
+        description: "Contact phone number for the location."
+      - name: location_registered_at
+        description: "Timestamp when the location was registered."
+        tests:
+          - not_null
+
+  - name: agg__cash_inflow
+    description: >
+      Aggregated view for cash inflows by period (monthly).
+      Sums total inflow amounts and counts payment events, with a reconciliation flag.
+    columns:
+      - name: period
+        description: "Month (truncated date) for which cash inflow is aggregated."
+        tests:
+          - not_null
+      - name: total_inflow
+        description: "Total cash inflow for the period."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1000000
+      - name: num_payments
+        description: "Number of payment transactions in the period."
+      - name: reconciliation_flag
+        description: "Flag indicating reconciliation status (e.g., 'OK' or 'Issue')."
+      - name: loaded_at
+        description: "Timestamp when the record was loaded."
+
+  - name: agg__cash_outflow
+    description: >
+      Aggregated view for cash outflows by period (monthly).
+      Aggregates device purchase costs and counts purchase events, with a reconciliation flag.
+    columns:
+      - name: period
+        description: "Month (truncated date) for which cash outflow is aggregated."
+        tests:
+          - not_null
+      - name: total_outflow
+        description: "Total cash outflow (device purchase costs) for the period."
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1000000
+      - name: num_purchases
+        description: "Number of device purchase events in the period."
+      - name: reconciliation_flag
+        description: "Flag indicating reconciliation status (e.g., 'OK' or 'Issue')."
+      - name: loaded_at
+        description: "Timestamp when the record was loaded."
+
+  - name: agg__cust_cash_reconciliation
+    description: >
+      Aggregated customer-level cash reconciliation view comparing actual cash received
+      (installation fees plus royalty payments) with expected revenue (installation fee plus estimated royalties).
+    columns:
+      - name: CustomerId
+        description: "Unique identifier for the customer."
+        tests:
+          - not_null
+          - unique
+      - name: CustomerName
+        description: "Name of the customer."
+      - name: actual_installation
+        description: "Total installation fees actually received from valid sales."
+      - name: actual_royalty
+        description: "Total royalty payments actually received."
+      - name: actual_total
+        description: "Combined actual revenue (installation + royalty)."
+      - name: expected_installation
+        description: "Expected installation fee based on valid sale amounts."
+      - name: expected_royalty
+        description: "Expected royalty revenue based on usage (e.g., total song plays * royalty rate)."
+      - name: expected_total
+        description: "Combined expected revenue."
+      - name: reconciliation_diff
+        description: "Difference between actual total revenue and expected total revenue."
+      - name: loaded_at
+        description: "Timestamp when the record was loaded."
+
+  - name: agg__usage
+    description: >
+      Aggregated monthly usage data that captures total song plays per device and ties each device
+      back to the corresponding selling agent via allocation events.
+    columns:
+      - name: DeviceId
+        description: "Unique identifier for the device."
+        tests:
+          - not_null
+      - name: AgentId
+        description: "Identifier for the selling agent associated with the device."
+      - name: AgentName
+        description: "Name of the selling agent."
+      - name: usage_month
+        description: "Month (truncated from song play event timestamp) for which usage is aggregated."
+        tests:
+          - not_null
+      - name: total_song_plays
+        description: "Total number of song plays aggregated for that month."
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1000000
+      - name: loaded_at
+        description: "Timestamp when the record was loaded."
