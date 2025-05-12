@@ -8,7 +8,7 @@
  – Included agent details (from the SellingAgent structure) so that each record has a clear lineage from event to business sale.
  – Added tests to confirm that every sale record has a valid device, customer, location, and payment associated.
 */
-
+-- Testing 1234
 -- models/int_sales_payments.sql
 
 with allocated as (
